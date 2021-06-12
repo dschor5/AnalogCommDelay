@@ -7,8 +7,8 @@ install:
   - pip install pylint
 script:
 #  - python3 -m unittest -v
-  - coverage run -m unittest discover src/delay_server
-  - pylint --exit-zero source/*
+  - cd src/delay_server; coverage run -m unittest discover
+  - cd src/delay_server; pylint --exit-zero delay_server
 #after_success:
 #  - bash <(curl -s https://codecov.io/bash)
 #  - cd docs; sphinx-apidoc --ext-autodoc -o . ../source/; sphinx-build -a . ./_build/
