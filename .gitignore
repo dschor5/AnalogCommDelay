@@ -2,3 +2,5 @@
 __pycache__
 draft
 *.log
+src/delay_server/htmlcov
+.coverage

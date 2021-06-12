@@ -1,13 +1,13 @@
 language: python
 python:
-  - "3.8" 
+  - "3.8.2" 
 install:
   - pip install -r requirements.txt
   - pip install coverage
   - pip install pylint
 script:
 #  - python3 -m unittest -v
-  - cd src/delay_server; coverage run -m unittest discover
+  - cd src/delay_server; coverage run -m unittest discover -v
   - cd src/delay_server; pylint --exit-zero delay_server
 after_success:
   - bash <(curl -s https://codecov.io/bash)

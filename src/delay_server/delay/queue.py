@@ -26,12 +26,13 @@ class DelayQueue:
 
     def pop(self):
         """ Pop message from queue after the delay expired. """
+        ret = None
         with self._lock:
             if len(self._list) != 0:
                 delta = time.monotonic() - self._list[0][0]
                 if delta > self._delay.time:
-                    return self._list.pop(0)[1]
-        return None
+                    ret = self._list.pop(0)[1]
+        return ret
 
     def push(self, value):
         """ Push message into the queue. Adds a timestamp. """

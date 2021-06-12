@@ -1,0 +1,17 @@
+# Run unit tests 
+cd src/delay_server
+python3 -m unittest -v
+
+# Run code coverage
+cd src/delay_server
+coverage run -m unittest discover -v
+coverage report
+
+# Run pylint 
+cd src/delay_server
+pylint delay_server
+
+# Run applicaiton
+cd src/delay_server
+python3 __main__.py
+
