@@ -1,5 +1,6 @@
 """ Test for delay.config module. """
 import unittest
+
 # pylint: disable=E0401
 from delay.config import DelayConfig
 

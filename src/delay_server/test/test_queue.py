@@ -62,8 +62,6 @@ class TestQueue(unittest.TestCase):
         time.sleep(delay)
         ret = self.__queue.pop()
         self.assertEqual(ret, "test")
-        
-
     
     def test_str(self):
         self.assertEqual(len(self.__queue), 0)
