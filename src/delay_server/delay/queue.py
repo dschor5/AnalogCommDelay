@@ -28,7 +28,7 @@ class DelayQueue:
         """ Pop message from queue after the delay expired. """
         ret = None
         with self._lock:
-            if len(self._list) != 0:
+            if len(self._list) > 0:
                 delta = time.monotonic() - self._list[0][0]
                 if delta > self._delay.time:
                     ret = self._list.pop(0)[1]

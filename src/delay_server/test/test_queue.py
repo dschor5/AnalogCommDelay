@@ -17,6 +17,8 @@ class TestQueue(unittest.TestCase):
     def setUp(self):
         """ Always create a new queue before running a test."""
         self.__queue = DelayQueue()
+        config = DelayConfig()
+        config.set_override(None)
 
     def test_init(self):
         """ Test CRC16 based on https://crccalc.com """

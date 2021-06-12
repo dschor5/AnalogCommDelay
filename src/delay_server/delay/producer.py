@@ -2,6 +2,7 @@
 import threading
 import struct
 import select
+import logging
 
 from delay.server import SocketServer
 from common.crc16 import CRC16
@@ -35,25 +36,42 @@ class ProducerThread(SocketServer, threading.Thread):
 
         return raw_data
 
-    def run(self, p_sock, p_stop, p_queue, p_connections):
+    def run(self, **kwargs): #p_sock, p_stop, p_queue, p_connections):
         """ Thread """
+
+        logger = logging.getLogger(self.__class__.__name__)
+
+        # Validate required kwargs parameters.
+        if 'sock' not in kwargs:
+            logger.critical("run() missing 'sock'")
+            return
+        if 'stop' not in kwargs:
+            logger.critical("run() missing 'stop'")
+            return
+        if 'queue' not in kwargs:
+            logger.critical("run() missing 'queue'")
+            return
+        if 'connections' not in kwargs:
+            logger.critical("run() missing 'connections'")
+            return
+
         i = 0
-        while not p_stop.isSet():
-            sock_read, _, sock_exception = select.select(p_connections, [], \
-                p_connections, SocketServer._SOCKET_TIMEOUT)
+        while not kwargs['stop'].isSet():
+            sock_read, _, sock_exception = select.select(kwargs['connections'], [], \
+                kwargs['connections'], SocketServer._SOCKET_TIMEOUT)
             for i_sock in sock_read:
                 # Accept new connections
-                if i_sock is p_sock:
-                    i_client_socket, i_client_address = p_sock.accept()
-                    p_connections.append(i_client_socket)
-                    self._logger.info('New connection from %s', i_client_address)
+                if i_sock is kwargs['sock']:
+                    i_client_socket, i_client_address = kwargs['sock'].accept()
+                    kwargs['connections'].append(i_client_socket)
+                    logger.info('New connection from %s', i_client_address)
                 else:
                     msg = self._receive(i_sock)
                     if msg is not None:
-                        p_queue.push(msg)
+                        kwargs['queue'].push(msg)
                         i += 1
             for i_sock in sock_exception:
                 print(f"Removing {i_sock}")
-                p_connections.remove(i_sock)
+                kwargs['connections'].remove(i_sock)
 
-        self._logger.debug('Produced %d msgs', i)
+        logger.debug('Produced %d msgs', i)
