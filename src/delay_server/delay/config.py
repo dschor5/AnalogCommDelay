@@ -1,4 +1,4 @@
-""" Configurable communication delay. """
+""" Configurable communication delay.  """
 
 import logging
 import threading
