@@ -19,15 +19,16 @@ class DelayConfig:
 
     def __init__(self):
         """ Initialize variables for this class."""
-        # Lock for accessing/modifying delay.
-        self._lock = threading.Lock()
-        # Override delay. If None, then no override.
-        self._override = None
-        # File containing delay configuration
-        self._filename = None
-        # Create logger for this module
-        self._logger = logging.getLogger(self.__class__.__name__)
-        self._logger.info('Create logger "%s"', self.__class__.__name__)
+        if not hasattr(self, '_lock'):
+            # Lock for accessing/modifying delay.
+            self._lock = threading.Lock()
+            # Override delay. If None, then no override.
+            self._override = None
+            # File containing delay configuration
+            self._filename = None
+            # Create logger for this module
+            self._logger = logging.getLogger(self.__class__.__name__)
+            self._logger.info('Create logger "%s"', self.__class__.__name__)
 
     def load_file(self, p_filename):
         """ Load configuration file. """
@@ -45,6 +46,11 @@ class DelayConfig:
         with self._lock:
             self._override = p_override
             self._logger.info('Override=%0.2fsec', self._override)
+
+    @property
+    def filename(self):
+        """ Filename accessor. """
+        return self._filename
 
     @property
     def time(self):

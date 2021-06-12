@@ -8,12 +8,12 @@ class CRC16:
     @staticmethod
     def calc_crc(data, crc=None):
         """ Calculate CRC16 on the given data. """
+        if data is None:
+            return None
+        if not isinstance(data, bytes):
+            return None
         if crc is None:
             crc = CRC16.__CRC_CCITT_INIT
-        if data is None:
-            return crc
-        if not isinstance(data, bytearray):
-            return None
 
         for byte in data:
             crc ^= (byte << 8)

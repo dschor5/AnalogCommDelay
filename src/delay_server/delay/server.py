@@ -57,16 +57,16 @@ class SocketServer(abc.ABC, threading.Thread):
             return
         self._stop.clear()
         self._sock['sock'] = SocketServer.create_socket(self._sock['port'])
-        self._sock['host'] = self._sock['sock'].gethostbyname(socket.gethostname())
-        self._sock['ip'] = SocketServer._get_host()
+        #self._sock['host'] = self._sock['sock'].gethostbyname(socket.gethostname())
+        #self._sock['ip'] = SocketServer._get_host()
         self._logger.info('Listening on port %d', self._sock['port'])
-        self._connections.append(self._sock)
+        self._connections.append(self._sock['sock'])
         self._thread = threading.Thread(name=self._name, \
-            target=self.run, args=(self._sock, self._stop, self._queue, self._connections))
+            target=self.run, args=(self._sock['sock'], self._stop, self._queue, self._connections))
         self._thread.setDaemon(True)
         self._thread.start()
         self._logger.info('Start thread')
 
     @abc.abstractmethod
-    def run(self, p_sock, p_stop, p_queue, p_connections):
+    def run(self):
         pass

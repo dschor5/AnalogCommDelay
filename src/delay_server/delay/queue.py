@@ -4,7 +4,7 @@ import threading
 import time
 import logging
 
-from delay_config import DelayConfig
+from delay.config import DelayConfig
 
 class DelayQueue:
     """ Delay Queue """
@@ -37,6 +37,8 @@ class DelayQueue:
         """ Push message into the queue. Adds a timestamp. """
         with self._lock:
             self._list.append((time.monotonic(), value))
+            length = len(self._list)
+        return length
 
     def __len__(self):
         """ Return length of the queue. """

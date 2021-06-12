@@ -3,8 +3,8 @@ import threading
 import struct
 import select
 
-from src.delay_server.socket_server import SocketServer
-from src.util.crc16 import CRC16
+from delay.server import SocketServer
+from common.crc16 import CRC16
 
 class ProducerThread(SocketServer, threading.Thread):
     """ Receive messages. Put them in the queue."""
