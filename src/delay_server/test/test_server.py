@@ -2,11 +2,12 @@
 import unittest
 
 # pylint: disable=E0401
+from test.test_class import TestClass
 from delay.server import SocketServer
 from delay.producer import ProducerThread
 from delay.queue import DelayQueue
 
-class TestServer(unittest.TestCase):
+class TestServer(TestClass):
     """Test class for main file."""
 
     def __init__(self, *args, **kwargs):

@@ -3,15 +3,16 @@ import unittest
 import time
 
 # pylint: disable=E0401
+from test.test_class import TestClass
 from delay.config import DelayConfig
 from delay.queue import DelayQueue
 
 
-class TestQueue(unittest.TestCase):
+class TestQueue(TestClass):
     """Test class for main file."""
 
     def __init__(self, *args, **kwargs):
-        super(TestQueue, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__queue = None
 
     def setUp(self):
@@ -21,7 +22,6 @@ class TestQueue(unittest.TestCase):
         config.set_override(None)
 
     def test_init(self):
-        """ Test CRC16 based on https://crccalc.com """
 
         # Create object
         self.assertIsNotNone(self.__queue)

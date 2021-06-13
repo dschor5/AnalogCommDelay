@@ -2,10 +2,14 @@
 import unittest
 
 # pylint: disable=E0401
+from test.test_class import TestClass
 from delay.config import DelayConfig
 
-class TestDelayConfig(unittest.TestCase):
+class TestDelayConfig(TestClass):
     """Test class for main file."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def setUp(self):
         """ Setup before each run. Resets DelayConfig object to defaults. """
@@ -14,7 +18,6 @@ class TestDelayConfig(unittest.TestCase):
         config.load_file(None)
 
     def test_init(self):
-        """ Test init """
 
         # Create object
         config1 = DelayConfig()
@@ -30,7 +33,6 @@ class TestDelayConfig(unittest.TestCase):
         self.assertIsNone(config1.filename)
 
     def test_load_file(self):
-        """ Test loading and parsing a config file. """
         config = DelayConfig()
 
         # Default value for filename
@@ -40,7 +42,6 @@ class TestDelayConfig(unittest.TestCase):
         self.assertEqual(config.filename, "test_config.txt")
 
     def test_override(self):
-        """ Test override set/clear. """
         config = DelayConfig()
         config.set_override(5)
         self.assertEqual(config.time, 5)

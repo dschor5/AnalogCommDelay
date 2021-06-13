@@ -45,7 +45,7 @@ class DelayConfig:
         """ Set override delay. """
         with self._lock:
             self._override = p_override
-            self._logger.info('Override=%0.2fsec', self._override)
+            self._logger.info('Override=%s', str(self._override))
 
     @property
     def filename(self):

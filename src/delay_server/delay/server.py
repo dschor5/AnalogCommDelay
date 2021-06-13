@@ -34,7 +34,6 @@ class SocketServer(abc.ABC, threading.Thread):
         self._thread_param['stop']  = threading.Event()
         self._thread_param['queue'] = p_queue
         self._thread_param['connections'] = []
-        self._thread_param['logger'] = self._logger
         self._thread = None
 
     @staticmethod

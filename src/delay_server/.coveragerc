@@ -1,5 +1,10 @@
 [run]
 branch = True
+omit = 
+    test/*.py
+    */__init__.py
 
 [html]
 directory = htmlcov
+
+
