@@ -27,9 +27,11 @@ class TestProducer(TestClass):
 
     def test_run(self):
         # Needed for code coverage only. 
-        ProducerThread.run(dict())
-
-        ProducerThread.run(dict(sock=None))
+        self.__server.run(**dict())
+        self.__server.run(**dict(sock=None))
+        self.__server.run(**dict(sock=None, stop=None))
+        self.__server.run(**dict(sock=None, stop=None, queue=1))
+        self.__server.stop_thread()
 
             
         

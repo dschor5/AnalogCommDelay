@@ -4,8 +4,6 @@ import threading
 import struct
 import socket
 import logging
-import requests
-
 
 class SocketServer(abc.ABC, threading.Thread):
     """ Abstract Socket Server thread. """
@@ -27,7 +25,7 @@ class SocketServer(abc.ABC, threading.Thread):
 
         self._thread_name = p_name
 
-        self._sock_param = dict(host=None, ip=None, port=p_port)
+        self._sock_port = p_port
 
         self._thread_param = dict()
         self._thread_param['sock']  = None
@@ -35,11 +33,6 @@ class SocketServer(abc.ABC, threading.Thread):
         self._thread_param['queue'] = p_queue
         self._thread_param['connections'] = []
         self._thread = None
-
-    @staticmethod
-    def _get_host():
-        """ Get its own IP address. """
-        return requests.get('http://api.apify.org').text
 
     @staticmethod
     def create_socket(port):
@@ -54,13 +47,19 @@ class SocketServer(abc.ABC, threading.Thread):
 
     @property
     def server_name(self):
+        """ Accessor for server name. """
         return self._thread_name
 
-    def stop_thread(self, timeout=None):
+    def stop_thread(self, timeout=0.5):
         """ Set flag to stop thread. """
         self._logger.info('Stop tread')
         self._thread_param['stop'].set()
-        # TODO: Wait until the thread joins, then close the socket.
+        if self._thread is None:
+            return False
+        self._thread.join(timeout)
+        if self._thread.is_alive():
+            return False
+        self._thread_param['sock'].close()
         self._thread = None
         return True
 
@@ -75,10 +74,10 @@ class SocketServer(abc.ABC, threading.Thread):
         self._thread_param['stop'].clear()
 
         # Create a new socket.
-        self._thread_param['sock'] = SocketServer.create_socket(self._sock_param['port'])
+        self._thread_param['sock'] = SocketServer.create_socket(self._sock_port)
 
         # Start listening for connections.
-        self._logger.info('Listening on port %d', self._sock_param['port'])
+        self._logger.info('Listening on port %d', self._sock_port)
         self._thread_param['connections'].append(self._thread_param['sock'])
 
         # Create the thread object
