@@ -1,6 +1,7 @@
 """ Test for delay.queue module. """
 import unittest
 import time
+import mock
 
 # pylint: disable=E0401
 from test.test_class import TestClass
@@ -32,6 +33,17 @@ class TestProducer(TestClass):
         self.__server.run(**dict(sock=None, stop=None))
         self.__server.run(**dict(sock=None, stop=None, queue=1))
         self.__server.stop_thread()
+
+    def test_receive(self):
+
+        # No message header received
+        mock_obj = mock.Mock()
+        mock_obj.recv.return_value = 0
+        self.assertIsNone(self.__server._receive(mock_obj))
+
+        # Message header with invalid length. 
+        mock_obj.recv.return_value = b'\xFFFF'
+        self.assertIsNone(self.__server._receive(mock_obj))
 
             
         

@@ -17,12 +17,30 @@ class ProducerThread(SocketServer, threading.Thread):
 
     def _receive(self, sock):
         """ Receive a message. """
+
+        # Get logger
+        logger = logging.getLogger(self.__class__.__name__)
+
+        # Receive the message header
         raw_hdr = sock.recv(SocketServer.HEADER_SIZE)
+
+        # If it does not receive anything, then return None.
         if not raw_hdr:
             return None
-        msg_size = struct.unpack(SocketServer._HEADER_DEF, raw_hdr)
-        if int(msg_size[0]) > 1024:
+
+        # If the message is incomplete, log a warning and discard. 
+        if len(raw_hdr) < SocketServer.HEADER_SIZE:
+            logger.warning('Incomplete message header %s', str(raw_hdr))
             return None
+
+        # Unpack the header. 
+        msg_hdr = struct.unpack(SocketServer._HEADER_DEF, raw_hdr)
+
+        # Validate message length. 
+        if int(msg_hdr[0]) > 1024:
+            logger.warning('Invalid message length %d', msg_hdr[0])
+            return None
+
         raw_data = sock.recv(msg_size[0])
         raw_ftr = sock.recv(SocketServer.FOOTER_SIZE)
 
@@ -66,7 +84,7 @@ class ProducerThread(SocketServer, threading.Thread):
                     kwargs['connections'].append(i_client_socket)
                     logger.info('New connection from %s', i_client_address)
                 else:
-                    msg = self._receive(i_sock)
+                    msg = ProducerThread._receive(i_sock)
                     if msg is not None:
                         kwargs['queue'].push(msg)
                         i += 1

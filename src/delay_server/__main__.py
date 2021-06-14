@@ -24,10 +24,12 @@ if __name__ == "__main__":
 
     q = DelayQueue()
     c = ConsumerThread(1000, q)
+    c.start_thread()
     p = ProducerThread(1001, q)
+    p.start_thread()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('localhost', 1001))
+    s.connect(('127.0.0.1', 1001))
     time.sleep(0.1)
     print("Send packet_data")
     i = 0
@@ -50,7 +52,7 @@ if __name__ == "__main__":
     print("End of packet_data")
     s.close()
 
-    time.sleep(5)
+    time.sleep(10)
     c.stop_thread()
     p.stop_thread()
     time.sleep(2)

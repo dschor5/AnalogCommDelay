@@ -46,9 +46,31 @@ class TestServer(TestClass):
         ret.close()
 
     def test_thread(self):
+        # Mock for socket.bind for travis-ci. 
         with mock.patch('delay.server.socket.socket.bind'):
             self.assertTrue(self.__server.start_thread())
-            self.assertFalse(self.__server.start_thread())
+
+        # Start thread already running. 
+        self.assertFalse(self.__server.start_thread())
+
+        # Stop thread nominal.
+        self.assertTrue(self.__server.stop_thread())
+
+        # Stp server already off. 
+        self.assertFalse(self.__server.stop_thread())
+
+        # Stop a thread fails join. 
+        self.__server = ProducerThread(self.__port, self.__queue)
+        with mock.patch('delay.server.socket.socket.bind'):
+            self.assertTrue(self.__server.start_thread())
+
+        mock_obj = mock.Mock()
+        mock_obj.return_value = True
+        with mock.patch('delay.server.threading.Thread.is_alive', mock_obj):
+            self.assertFalse(self.__server.stop_thread())
+
+
+        
 
     def test_run(self):
         # Needed for code coverage only. 
