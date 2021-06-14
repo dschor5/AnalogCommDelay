@@ -1,6 +1,7 @@
 """ Test for delay.queue module. """
 import unittest
 import socket
+import mock
 
 # pylint: disable=E0401
 from test.test_class import TestClass
@@ -39,13 +40,15 @@ class TestServer(TestClass):
 
     def test_create_socket(self):
         self.assertIsNone(SocketServer.create_socket(None))
-        ret = SocketServer.create_socket(1000)
+        with mock.patch('delay.server.socket.socket.bind'):
+            ret = SocketServer.create_socket(1000)
         self.assertIsNotNone(ret)
         ret.close()
 
     def test_thread(self):
-        self.assertTrue(self.__server.start_thread())
-        self.assertFalse(self.__server.start_thread())
+        with mock.patch('delay.server.socket.socket.bind'):
+            self.assertTrue(self.__server.start_thread())
+            self.assertFalse(self.__server.start_thread())
 
     def test_run(self):
         # Needed for code coverage only. 

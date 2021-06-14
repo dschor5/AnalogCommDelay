@@ -5,6 +5,10 @@ install:
   - pip install -r requirements.txt
   - pip install coverage
   - pip install pylint
+  - pip install mock
+env:
+  global:
+    - TRAVISCI=true
 script:
 #  - python3 -m unittest -v
   - cd src/delay_server
