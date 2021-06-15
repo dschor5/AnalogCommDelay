@@ -33,17 +33,18 @@ if __name__ == "__main__":
     time.sleep(0.1)
     print("Send packet_data")
     i = 0
-    while i < 10:
-        num_bytes = random.randint(1, 3)
+    while i < 1:
+        num_bytes = random.randint(3, 10)
         packed_data = struct.pack('! I', num_bytes)
         crc = CRC16.calc_crc(packed_data)
-        data = os.urandom(num_bytes)
+        data = os.urandom(num_bytes - 2)
         crc = CRC16.calc_crc(data, crc)
-        if random.randint(1, 100) < 1:
-            crc += 1
+#        if random.randint(1, 100) < 1:
+#            crc += 1
         values = (num_bytes, data, crc)
-        packer = struct.Struct('! I ' + str(num_bytes) + 's H')
+        packer = struct.Struct('! I ' + str(num_bytes-2) + 's H')
 
+        print("Send " + str(values))
         packed_data = packer.pack(*values)
         s.sendall(packed_data)
         if random.randint(1, 100) < 1:

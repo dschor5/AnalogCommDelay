@@ -69,9 +69,6 @@ class TestServer(TestClass):
         with mock.patch('delay.server.threading.Thread.is_alive', mock_obj):
             self.assertFalse(self.__server.stop_thread())
 
-
-        
-
     def test_run(self):
         # Needed for code coverage only. 
         SocketServer.run(dict())
@@ -79,7 +76,7 @@ class TestServer(TestClass):
     def test_socketpair(self):
         client, testsocket = socket.socketpair()
         client.sendall(b'\x01\x02\x03')
-        print(testsocket.recv(1024))
+        #print(testsocket.recv(1024))
         testsocket.close()
         client.close()
         

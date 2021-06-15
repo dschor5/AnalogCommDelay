@@ -35,12 +35,13 @@ class SocketServer(abc.ABC, threading.Thread):
         self._thread = None
 
     @staticmethod
-    def create_socket(port):
+    def create_socket(port, timeout=0.1):
         """ Create socket and start listening for connections. """
         if port is None:
             return None
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.settimeout(timeout)
         sock.bind(('', port))
         sock.listen()
         return sock
@@ -50,7 +51,7 @@ class SocketServer(abc.ABC, threading.Thread):
         """ Accessor for server name. """
         return self._thread_name
 
-    def stop_thread(self, timeout=0.5):
+    def stop_thread(self, timeout=0.1):
         """ Set flag to stop thread. """
         self._logger.info('Stop tread')
         self._thread_param['stop'].set()

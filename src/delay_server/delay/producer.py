@@ -18,59 +18,79 @@ class ProducerThread(SocketServer, threading.Thread):
     def _receive(self, sock):
         """ Receive a message. """
 
-        # Get logger
+        # Disable pylint warning for "Too many return statements"
+        # pylint: disable=R0911
+
         logger = logging.getLogger(self.__class__.__name__)
 
-        # Receive the message header
+        if sock is None:
+            return None
+
         raw_hdr = sock.recv(SocketServer.HEADER_SIZE)
 
-        # If it does not receive anything, then return None.
+        # Check for empty message header
         if not raw_hdr:
             return None
 
-        # If the message is incomplete, log a warning and discard. 
+        # Check for incomplete message header
         if len(raw_hdr) < SocketServer.HEADER_SIZE:
-            logger.warning('Incomplete message header %s', str(raw_hdr))
+            logger.warning('MsgHdr len=%d < exp=%d', len(raw_hdr), SocketServer.HEADER_SIZE)
             return None
 
-        # Unpack the header. 
-        msg_hdr = struct.unpack(SocketServer._HEADER_DEF, raw_hdr)
-
-        # Validate message length. 
-        if int(msg_hdr[0]) > 1024:
-            logger.warning('Invalid message length %d', msg_hdr[0])
+        # Parse message header
+        try:
+            # Unpack the header.
+            msg_hdr = struct.unpack(SocketServer._HEADER_DEF, raw_hdr)
+            # Extract message length
+            msg_size = int(msg_hdr[0])
+        except struct.error:
+            logger.warning('MsgHdr parse error')
             return None
 
-        raw_data = sock.recv(msg_size[0])
-        raw_ftr = sock.recv(SocketServer.FOOTER_SIZE)
-
-        crc = CRC16.calc_crc(raw_hdr)
-        crc = CRC16.calc_crc(raw_data, crc)
-
-        msg_crc = struct.unpack(SocketServer._FOOTER_DEF, raw_ftr)
-        if crc != msg_crc[0]:
-            self._logger.warning("CRC %04x != %04x", crc, msg_crc[0])
+        # Validate message length
+        if msg_size > 1024:
+            logger.warning('MsgData invalid len=%d', msg_size)
             return None
 
-        return raw_data
+        # Get message data
+        raw_data = sock.recv(msg_size)
 
-    def run(self, **kwargs): #p_sock, p_stop, p_queue, p_connections):
+        # Check for empty message data
+        if not raw_data:
+            logger.warning('MsgData is empty')
+            return None
+
+        # Check for incomplete message data
+        if len(raw_data) < msg_size:
+            logger.warning('MsgData len=%d < exp=%d', len(raw_data), msg_size)
+            return None
+
+        # Parse message data/footer
+        try:
+            struct_def = '! ' + str(msg_size-2) + 's H'
+            msg_data = struct.unpack(struct_def, raw_data)
+            msg_crc = msg_data[1]
+        except struct.error:
+            logger.warning('MsgData parse error')
+            return None
+
+        calc_crc = CRC16.calc_crc(raw_hdr)
+        calc_crc = CRC16.calc_crc(msg_data[0], calc_crc)
+
+        if calc_crc != msg_crc:
+            self._logger.warning("Msg CRC recv=%04x != exp=%04x", msg_crc, calc_crc)
+            return None
+
+        return raw_data[:-2]
+
+    def run(self, **kwargs):
         """ Thread """
 
         logger = logging.getLogger(self.__class__.__name__)
-
-        # Validate required kwargs parameters.
-        if 'sock' not in kwargs:
-            logger.critical("run() missing 'sock'")
-            return
-        if 'stop' not in kwargs:
-            logger.critical("run() missing 'stop'")
-            return
-        if 'queue' not in kwargs:
-            logger.critical("run() missing 'queue'")
-            return
-        if 'connections' not in kwargs:
-            logger.critical("run() missing 'connections'")
+        req_kwargs = set(['sock', 'stop', 'queue', 'connections'])
+        found = req_kwargs.difference(kwargs)
+        if len(found) > 0:
+            logger.critical('run() missing [%s] kwargs', found)
             return
 
         i = 0
@@ -84,7 +104,7 @@ class ProducerThread(SocketServer, threading.Thread):
                     kwargs['connections'].append(i_client_socket)
                     logger.info('New connection from %s', i_client_address)
                 else:
-                    msg = ProducerThread._receive(i_sock)
+                    msg = self._receive(i_sock)
                     if msg is not None:
                         kwargs['queue'].push(msg)
                         i += 1

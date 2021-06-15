@@ -4,6 +4,8 @@ import threading
 import time
 import logging
 
+# Disable pylint warning for import errors.
+# pylint: disable=E0401
 from delay.config import DelayConfig
 
 class DelayQueue:
