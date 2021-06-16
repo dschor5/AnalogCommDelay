@@ -1,5 +1,4 @@
 """ Producer thread. Receives messages and puts them in a queue. """
-import threading
 import logging
 #import struct
 #import select
@@ -7,13 +6,12 @@ import logging
 from delay.server import SocketServer
 #from common.crc16 import CRC16
 
-class ConsumerThread(SocketServer, threading.Thread):
+class ConsumerThread(SocketServer):
     """ Consumer Thread """
 
     def __init__(self, p_port, p_queue):
         """ Initializer """
         SocketServer.__init__(self, "Consumer", p_port, p_queue)
-        threading.Thread.__init__(self)
 
     def _send(self, data: bytearray):
         """ Send data """
