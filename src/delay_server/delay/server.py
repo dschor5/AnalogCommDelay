@@ -5,6 +5,8 @@ import struct
 import socket
 import logging
 
+# TODO: Convert code for bytearray (mutable) instead of bytes (immutable)
+
 from common.crc16 import CRC16
 
 class SocketServer(abc.ABC, threading.Thread):
@@ -16,6 +18,8 @@ class SocketServer(abc.ABC, threading.Thread):
 
     _FOOTER_DEF = '! H'
     FOOTER_SIZE = struct.calcsize(_FOOTER_DEF)
+
+    MAX_MSG_LEN = 1024
 
     _SOCKET_TIMEOUT = 0.01
 
@@ -93,13 +97,52 @@ class SocketServer(abc.ABC, threading.Thread):
 
         return True
 
+    def _send(self, sock, raw_data):
+        """ Send a message. """
+
+        # Disable pylint warning for "Too many return statements"
+        # pylint: disable=R0911
+
+        if sock is None or raw_data is None:
+            return None
+
+        # Purposely get the logger after confirming there were some bytes to receive.
+        logger = logging.getLogger(self.__class__.__name__)
+
+        if not isinstance(raw_data, bytearray):
+            logger.warning('Wrong msg type')
+            return None
+
+        msg_len = len(raw_data) + SocketServer.FOOTER_SIZE
+        if msg_len > SocketServer.MAX_MSG_LEN:
+            logger.warning('Msg too long')
+            return None
+        if msg_len == SocketServer.FOOTER_SIZE:
+            logger.warning('Msg is empty')
+            return None
+
+        try:
+            raw_hdr = bytearray(struct.pack(SocketServer._HEADER_DEF, msg_len))
+            raw_msg = raw_hdr + raw_data
+            calc_crc = CRC16.calc_crc(raw_msg)
+            raw_ftr = bytearray(struct.pack(SocketServer._FOOTER_DEF, calc_crc))
+        except struct.error:
+            logger.warning('Msg parse error')
+            return None
+
+        raw_msg += raw_ftr
+        bytes_sent = sock.send(raw_msg)
+        if bytes_sent < msg_len:
+            logger.warning('Partial message sent')
+            return None
+
+        return bytes_sent
+
     def _receive(self, sock):
         """ Receive a message. """
 
         # Disable pylint warning for "Too many return statements"
         # pylint: disable=R0911
-
-        logger = logging.getLogger(self.__class__.__name__)
 
         if sock is None:
             return None
@@ -109,6 +152,9 @@ class SocketServer(abc.ABC, threading.Thread):
         # Check for empty message header
         if not raw_hdr:
             return None
+
+        # Purposely get the logger after confirming there were some bytes to receive.
+        logger = logging.getLogger(self.__class__.__name__)
 
         # Check for incomplete message header
         if len(raw_hdr) < SocketServer.HEADER_SIZE:
@@ -126,7 +172,7 @@ class SocketServer(abc.ABC, threading.Thread):
             return None
 
         # Validate message length
-        if msg_size > 1024:
+        if msg_size > SocketServer.MAX_MSG_LEN:
             logger.warning('MsgData invalid len=%d', msg_size)
             return None
 
@@ -145,7 +191,7 @@ class SocketServer(abc.ABC, threading.Thread):
 
         # Parse message data/footer
         try:
-            struct_def = '! ' + str(msg_size-2) + 's H'
+            struct_def = '! ' + str(msg_size-SocketServer.FOOTER_SIZE) + 's H'
             msg_data = struct.unpack(struct_def, raw_data)
             msg_crc = msg_data[1]
         except struct.error:
@@ -159,7 +205,8 @@ class SocketServer(abc.ABC, threading.Thread):
             self._logger.warning("Msg CRC recv=%04x != exp=%04x", msg_crc, calc_crc)
             return None
 
-        return raw_data[:-2]
+        # Returns mutable bytearray
+        return bytearray(raw_data[:-2])
 
     @abc.abstractmethod
     def run(self, **kwargs):

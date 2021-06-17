@@ -10,7 +10,7 @@ class CRC16:
         """ Calculate CRC16 on the given data. """
         if data is None:
             return None
-        if not isinstance(data, bytes):
+        if not isinstance(data, bytes) and not isinstance(data, bytearray):
             return None
         if crc is None:
             crc = CRC16.__CRC_CCITT_INIT

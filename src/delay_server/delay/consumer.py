@@ -13,9 +13,6 @@ class ConsumerThread(SocketServer):
         """ Initializer """
         SocketServer.__init__(self, "Consumer", p_port, p_queue)
 
-    def _send(self, data: bytearray):
-        """ Send data """
-
 
     def run(self, **kwargs):
         """ Thread """

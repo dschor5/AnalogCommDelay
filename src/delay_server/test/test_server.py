@@ -127,37 +127,60 @@ class TestServer(TestClass):
         self.assertIsNotNone(ret)
         self.assertEqual(ret, b'\x01')
 
-        # Valid message (long)
-        raw_hdr = b'\x00\x00\x04\x00'
-        raw_data = []
-        raw_data.append(b'\x03' * 1022)
-        crc = CRC16.calc_crc(raw_hdr)
-        crc = CRC16.calc_crc(raw_data[0], crc)
-        raw_data.append(crc.to_bytes(2, byteorder='big'))
-        msg = b''.join(raw_data)
-        mock_recv.recv.side_effect = [raw_hdr, msg]
-        ret = self.__server._receive(mock_recv)
-        self.assertIsNotNone(ret)
-        self.assertEqual(ret, raw_data[0])
+    def test_send(self):
+        mock_send = mock.Mock()
+        mock_struct = mock.Mock()
+        msg = bytearray()
 
-        # Valid message with random data(long)
-        raw_hdr = b'\x00\x00\x04\x00'
-        raw_data = []
-        raw_data.append(os.urandom(1022))
-        crc = CRC16.calc_crc(raw_hdr)
-        crc = CRC16.calc_crc(raw_data[0], crc)
-        raw_data.append(crc.to_bytes(2, byteorder='big'))
-        msg = b''.join(raw_data)
-        mock_recv.recv.side_effect = [raw_hdr, msg]
-        ret = self.__server._receive(mock_recv)
-        self.assertIsNotNone(ret)
-        self.assertEqual(ret, raw_data[0])
+        # Invalid params.
+        self.assertIsNone(self.__server._send(None, bytearray()))
+        self.assertIsNone(self.__server._send(mock_send, None))
+        self.assertIsNone(self.__server._send(mock_send, b'\x01'))
 
+        # Invalid message length
+        msg = bytearray()
+        self.assertIsNone(self.__server._send(mock_send, msg))
+        msg = bytearray(os.urandom(SocketServer.MAX_MSG_LEN))
+        self.assertIsNone(self.__server._send(mock_send, msg))
+
+        # Failed to parse message header
+        msg = bytearray(b'\x01\x02\x03')
+        mock_struct.side_effect = [struct.error(), struct.error()]
+        with mock.patch('struct.pack', mock_struct):
+            self.assertIsNone(self.__server._send(mock_send, msg))
+
+        # Failed to parse message crc
+        msg = bytearray(b'\x01\x02\x03')
+        mock_struct.side_effect = [b'\x00\x00\x00\x03', struct.error()]
+        with mock.patch('struct.pack', mock_struct):
+            self.assertIsNone(self.__server._send(mock_send, msg))
+
+        # Failed to send full message
+        msg = bytearray(b'\x01')
+        mock_struct.side_effect = [b'\x00\x00\x00\x03', b'\x54\x7E']
+        mock_send.send.side_effect = [1]
+        with mock.patch('struct.pack', mock_struct):
+            self.assertIsNone(self.__server._send(mock_send, msg))
+
+        # Sent full message
+        msg = bytearray(b'\x01')
+        mock_struct.side_effect = [b'\x00\x00\x00\x03', b'\x54\x7E']
+        mock_send.send.side_effect = [7]
+        with mock.patch('struct.pack', mock_struct):
+            self.assertEqual(self.__server._send(mock_send, msg), 7)
 
     def test_socketpair(self):
-        client, testsocket = socket.socketpair()
-        client.sendall(b'\x01\x02\x03')
-        #print(testsocket.recv(1024))
-        testsocket.close()
-        client.close()
+
+        sock_send, sock_recv = socket.socketpair()
         
+        for num_bytes in range(1, SocketServer.MAX_MSG_LEN-SocketServer.FOOTER_SIZE+1):
+            num_bytes = 1
+            raw_msg = bytearray(os.urandom(num_bytes))
+            msg_len = len(raw_msg) + SocketServer.HEADER_SIZE + SocketServer.FOOTER_SIZE
+            self.assertEqual(self.__server._send(sock_send, raw_msg), msg_len)
+            ret = self.__server._receive(sock_recv)
+            self.assertEqual(raw_msg, ret)
+        
+        sock_recv.close()
+        sock_send.close()
+
