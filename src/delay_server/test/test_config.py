@@ -51,3 +51,7 @@ class TestDelayConfig(TestClass):
         self.assertEqual(self._config.get('dummy', 'value'), "1")
         self._config.remove_option('dummy', 'value')
         self._config.remove_section('dummy')
+
+    def test_repr(self):
+        rtr = self._config.__repr__()
+        self.assertIsNotNone(rtr)

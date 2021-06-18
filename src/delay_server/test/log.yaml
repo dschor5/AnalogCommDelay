@@ -12,7 +12,7 @@ handlers:
         maxBytes: 1048576 # 1 MB
         level: DEBUG
         formatter: standard
-        filename: test/delay_server_test.log
+        filename: test/log/delay_server_test.log
 
 root:
     level: NOTSET
