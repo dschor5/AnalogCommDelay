@@ -15,3 +15,4 @@ pylint delay_server
 cd src/delay_server
 python3 __main__.py
 
+test

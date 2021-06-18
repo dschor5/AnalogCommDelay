@@ -1,4 +1,4 @@
-""" Abstract socket server. """
+"""Abstract socket server."""
 import abc
 import threading
 import struct
@@ -9,8 +9,10 @@ import logging
 
 from common.crc16 import CRC16
 
+
 class SocketServer(abc.ABC, threading.Thread):
-    """ Abstract Socket Server thread. """
+    """Abstract Socket Server thread."""
+
     # https://steelkiwi.com/blog/working-tcp-sockets/
 
     _HEADER_DEF = '! I'
@@ -24,7 +26,7 @@ class SocketServer(abc.ABC, threading.Thread):
     _SOCKET_TIMEOUT = 0.01
 
     def __init__(self, p_name, p_port, p_queue):
-        """ Initialize """
+        """Initialize."""
         threading.Thread.__init__(self)
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.info('Create logger "%s"', self.__class__.__name__)
@@ -34,31 +36,32 @@ class SocketServer(abc.ABC, threading.Thread):
         self._sock_port = p_port
 
         self._thread_param = dict()
-        self._thread_param['sock']  = None
-        self._thread_param['stop']  = threading.Event()
+        self._thread_param['sock'] = None
+        self._thread_param['stop'] = threading.Event()
         self._thread_param['queue'] = p_queue
         self._thread_param['connections'] = []
         self._thread = None
 
     @staticmethod
     def create_socket(port, timeout=0.1):
-        """ Create socket and start listening for connections. """
+        """Create socket and start listening for connections."""
         if port is None:
             return None
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.settimeout(timeout)
-        sock.bind(('', port))
+        sock.bind(('127.0.0.1', port))
         sock.listen()
+
         return sock
 
     @property
     def server_name(self):
-        """ Accessor for server name. """
+        """Accessor for server name."""
         return self._thread_name
 
     def stop_thread(self, timeout=0.1):
-        """ Set flag to stop thread. """
+        """Set flag to stop thread."""
         self._logger.info('Stop tread')
         self._thread_param['stop'].set()
         if self._thread is None:
@@ -71,8 +74,7 @@ class SocketServer(abc.ABC, threading.Thread):
         return True
 
     def start_thread(self):
-        """ Start thread. """
-
+        """Start thread."""
         # Only one instance of thread can be active.
         if self._thread is not None:
             return False
@@ -81,15 +83,18 @@ class SocketServer(abc.ABC, threading.Thread):
         self._thread_param['stop'].clear()
 
         # Create a new socket.
-        self._thread_param['sock'] = SocketServer.create_socket(self._sock_port)
+        self._thread_param['sock'] = \
+            SocketServer.create_socket(self._sock_port)
 
         # Start listening for connections.
         self._logger.info('Listening on port %d', self._sock_port)
         self._thread_param['connections'].append(self._thread_param['sock'])
 
         # Create the thread object
-        self._thread = threading.Thread(name=self._thread_name, \
-            target=self.run, kwargs=self._thread_param, daemon=True)
+        self._thread = threading.Thread(name=self._thread_name,
+                                        target=self.run,
+                                        kwargs=self._thread_param,
+                                        daemon=True)
 
         # Start the thread
         self._thread.start()
@@ -98,15 +103,13 @@ class SocketServer(abc.ABC, threading.Thread):
         return True
 
     def _send(self, sock, raw_data):
-        """ Send a message. """
-
+        """Send a message."""
         # Disable pylint warning for "Too many return statements"
         # pylint: disable=R0911
 
         if sock is None or raw_data is None:
             return None
 
-        # Purposely get the logger after confirming there were some bytes to receive.
         logger = logging.getLogger(self.__class__.__name__)
 
         if not isinstance(raw_data, bytearray):
@@ -122,10 +125,12 @@ class SocketServer(abc.ABC, threading.Thread):
             return None
 
         try:
-            raw_hdr = bytearray(struct.pack(SocketServer._HEADER_DEF, msg_len))
+            raw_hdr = bytearray(struct.pack(
+                SocketServer._HEADER_DEF, msg_len))
             raw_msg = raw_hdr + raw_data
             calc_crc = CRC16.calc_crc(raw_msg)
-            raw_ftr = bytearray(struct.pack(SocketServer._FOOTER_DEF, calc_crc))
+            raw_ftr = bytearray(struct.pack(
+                SocketServer._FOOTER_DEF, calc_crc))
         except struct.error:
             logger.warning('Msg parse error')
             return None
@@ -139,8 +144,7 @@ class SocketServer(abc.ABC, threading.Thread):
         return bytes_sent
 
     def _receive(self, sock):
-        """ Receive a message. """
-
+        """Receive a message."""
         # Disable pylint warning for "Too many return statements"
         # pylint: disable=R0911
 
@@ -153,12 +157,12 @@ class SocketServer(abc.ABC, threading.Thread):
         if not raw_hdr:
             return None
 
-        # Purposely get the logger after confirming there were some bytes to receive.
         logger = logging.getLogger(self.__class__.__name__)
 
         # Check for incomplete message header
         if len(raw_hdr) < SocketServer.HEADER_SIZE:
-            logger.warning('MsgHdr len=%d < exp=%d', len(raw_hdr), SocketServer.HEADER_SIZE)
+            logger.warning('MsgHdr len=%d < exp=%d',
+                           len(raw_hdr), SocketServer.HEADER_SIZE)
             return None
 
         # Parse message header
@@ -202,14 +206,15 @@ class SocketServer(abc.ABC, threading.Thread):
         calc_crc = CRC16.calc_crc(msg_data[0], calc_crc)
 
         if calc_crc != msg_crc:
-            self._logger.warning("Msg CRC recv=%04x != exp=%04x", msg_crc, calc_crc)
+            self._logger.warning("Msg CRC recv=%04x != exp=%04x",
+                                 msg_crc, calc_crc)
             return None
 
         # Returns mutable bytearray
         return bytearray(raw_data[:-2])
 
     def _validate_thread_param(self, **kwargs):
-        """ Validate thread parameters. """
+        """Validate thread parameters."""
         req_kwargs = set(['sock', 'stop', 'queue', 'connections'])
         found = req_kwargs.difference(kwargs)
         if len(found) > 0:

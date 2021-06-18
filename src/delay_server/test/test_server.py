@@ -45,14 +45,20 @@ class TestServer(TestClass):
 
     def test_create_socket(self):
         self.assertIsNone(SocketServer.create_socket(None))
-        with mock.patch('delay.server.socket.socket.bind'):
+        if os.environ.get('TRAVISCI') is not None:
+            with mock.patch('delay.server.socket.socket.bind'):
+                ret = SocketServer.create_socket(1000)
+        else:
             ret = SocketServer.create_socket(1000)
         self.assertIsNotNone(ret)
         ret.close()
 
     def test_thread(self):
-        # Mock for socket.bind for travis-ci. 
-        with mock.patch('delay.server.socket.socket.bind'):
+        # Mock for socket.bind for travis-ci.
+        if os.environ.get('TRAVISCI') is not None:
+            with mock.patch('delay.server.socket.socket.bind'):
+                self.assertTrue(self.__server.start_thread())
+        else:
             self.assertTrue(self.__server.start_thread())
 
         # Start thread already running. 
@@ -66,7 +72,10 @@ class TestServer(TestClass):
 
         # Stop a thread fails join. 
         self.__server = ProducerThread(self.__port, self.__queue)
-        with mock.patch('delay.server.socket.socket.bind'):
+        if os.environ.get('TRAVISCI') is not None:
+            with mock.patch('delay.server.socket.socket.bind'):
+                self.assertTrue(self.__server.start_thread())
+        else:
             self.assertTrue(self.__server.start_thread())
 
         mock_obj = mock.Mock()
