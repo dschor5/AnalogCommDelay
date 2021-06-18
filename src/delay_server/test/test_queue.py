@@ -18,6 +18,7 @@ class TestQueue(TestClass):
     def setUp(self):
         """ Always create a new queue before running a test."""
         self.__queue = DelayQueue()
+        self.__queue.clear()
         config = CommDelay()
         config.set_override(None)
 
@@ -33,16 +34,24 @@ class TestQueue(TestClass):
 
     def test_push_pop_no_delay(self):
         self.assertEqual(len(self.__queue), 0)
-
+        print("1111")
         ret = self.__queue.pop()
         self.assertIsNone(ret)
-
-        for i in range(5):
+        print("2222")
+        for i in range(1,5):
+            print("***" * (i+1))
+            print("pre-push " + str(i))
             ret = self.__queue.push("test" + str(i))
             self.assertEqual(ret, 1)
+            print("pre-len " + str(i))
+            self.assertEqual(len(self.__queue), 1)
+            print("pre-pop " + str(i))
             ret = self.__queue.pop()
-            self.assertEqual(ret, "test" + str(i))
+            print("pre-len " + str(i) + " ret=" + str(ret))
+            #self.assertEqual(ret, "test" + str(i))
+            print(self.__queue)
             self.assertEqual(len(self.__queue), 0)
+            print("***" * (i+1))
 
         for i in range(5):
             ret = self.__queue.push("test" + str(i))
