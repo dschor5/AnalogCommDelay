@@ -1,10 +1,8 @@
 """ Producer thread. Receives messages and puts them in a queue. """
 import logging
-#import struct
-#import select
+import select
 
 from delay.server import SocketServer
-#from common.crc16 import CRC16
 
 class ConsumerThread(SocketServer):
     """ Consumer Thread """
@@ -19,24 +17,26 @@ class ConsumerThread(SocketServer):
 
         logger = logging.getLogger(self.__class__.__name__)
 
-        # Validate required kwargs parameters.
-        if 'sock' not in kwargs:
-            logger.critical("run() missing 'sock'")
+        logger = logging.getLogger(self.__class__.__name__)
+        if not self._validate_thread_param(**kwargs):
             return
-        if 'stop' not in kwargs:
-            logger.critical("run() missing 'stop'")
-            return
-        if 'queue' not in kwargs:
-            logger.critical("run() missing 'queue'")
-            return
-        if 'connections' not in kwargs:
-            logger.critical("run() missing 'connections'")
-            return
-
 
         i = 0
         while not kwargs['stop'].isSet():
+            sock_read, sock_write, sock_exception = select.select(kwargs['connections'], \
+                kwargs['connections'], kwargs['connections'], SocketServer._SOCKET_TIMEOUT)
+            for i_sock in sock_read:
+                # Accept new connections to send messages
+                if i_sock is kwargs['sock']:
+                    i_client_socket, i_client_address = kwargs['sock'].accept()
+                    kwargs['connections'].append(i_client_socket)
+                    logger.info('New connection from %s', i_client_address)
             data = kwargs['queue'].pop()
             if data is not None:
+                for i_sock in sock_write:
+                    self._send(i_sock, data)
+            for i_sock in sock_exception:
+                print(f"Removing {i_sock}")
+                kwargs['connections'].remove(i_sock)
                 i += 1
         logger.debug('Consumed %d msgs', i)

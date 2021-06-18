@@ -1,5 +1,7 @@
 """ Test for delay.config module. """
 import unittest
+import mock
+import configparser
 
 # pylint: disable=E0401
 from test.test_class import TestClass
@@ -10,40 +12,42 @@ class TestDelayConfig(TestClass):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._config = None
 
     def setUp(self):
         """ Setup before each run. Resets DelayConfig object to defaults. """
-        config = DelayConfig()
-        config.clear_override()
-        config.load_file(None)
+        self._config = DelayConfig()
 
     def test_init(self):
-
         # Create object
-        config1 = DelayConfig()
-        self.assertIsNotNone(config1)
+        self.assertIsNotNone(self._config)
 
         # Verify Singleton
-        config2 = DelayConfig()
-        self.assertIsNotNone(config2)
-        self.assertEqual(config1, config2)
+        other = DelayConfig()
+        self.assertEqual(self._config, other)
 
-        # Default values
-        self.assertEqual(config1.time, 0)
-        self.assertIsNone(config1.filename)
+    def test_read_config(self):
+        # Read non-existing file
+        self.assertFalse(self._config._read_config("dummy.ini"))
 
-    def test_load_file(self):
-        config = DelayConfig()
+        mock_obj = mock.Mock()
+        mock_obj.return_value = False
+        with mock.patch('delay.config.DelayConfig._validate', mock_obj):
+            self.assertFalse(self._config._read_config())
 
-        # Default value for filename
-        self.assertIsNone(config.filename, None)
+        mock_obj = mock.Mock()
+        mock_obj.side_effect = configparser.Error()
+        with mock.patch('configparser.ConfigParser.read', mock_obj):
+            self.assertFalse(self._config._read_config())
 
-        config.load_file("test_config.txt")
-        self.assertEqual(config.filename, "test_config.txt")
+        # Read default config
+        self.assertTrue(self._config._read_config())
 
-    def test_override(self):
-        config = DelayConfig()
-        config.set_override(5)
-        self.assertEqual(config.time, 5)
-        config.clear_override()
-        self.assertEqual(config.time, 0)
+    def test_getattr(self):
+        self.assertTrue(self._config._read_config())
+        self.assertIsNone(self._config.get('dummy', 'value'))
+        self._config.add_section('dummy')
+        self._config.set('dummy', 'value', "1")
+        self.assertEqual(self._config.get('dummy', 'value'), "1")
+        self._config.remove_option('dummy', 'value')
+        self._config.remove_section('dummy')

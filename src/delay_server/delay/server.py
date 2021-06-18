@@ -208,6 +208,16 @@ class SocketServer(abc.ABC, threading.Thread):
         # Returns mutable bytearray
         return bytearray(raw_data[:-2])
 
+    def _validate_thread_param(self, **kwargs):
+        """ Validate thread parameters. """
+        req_kwargs = set(['sock', 'stop', 'queue', 'connections'])
+        found = req_kwargs.difference(kwargs)
+        if len(found) > 0:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.critical('run() missing [%s] kwargs', found)
+            return False
+        return True
+
     @abc.abstractmethod
     def run(self, **kwargs):
         pass

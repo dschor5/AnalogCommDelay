@@ -8,28 +8,37 @@ import os
 import logging
 
 # pylint: disable=E0401
-from delay.config import DelayConfig
+from delay.delay import CommDelay
 from delay.queue import DelayQueue
 from delay.producer import ProducerThread
 from delay.consumer import ConsumerThread
+from delay.config import DelayConfig
 from common.crc16 import CRC16
+
+
+
+def test_client():
+    """ Test client."""
+    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_sock.connect(('127.0.0.1', 1001))
+
 
 if __name__ == "__main__":
 
     logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s', \
         filemode='w', level=logging.DEBUG, filename='DelayServer2.log')
     logging.info('Created logger')
-    c = DelayConfig()
-    c.set_override(5)
+    delay = CommDelay().set_override(5)
+    config = DelayConfig()
 
-    q = DelayQueue()
-    c = ConsumerThread(1000, q)
-    c.start_thread()
-    p = ProducerThread(1001, q)
-    p.start_thread()
+    queue = DelayQueue()
+    consumer = ConsumerThread(int(config.get('mcc', 'post_recv')), queue)
+    consumer.start_thread()
+    producer = ProducerThread(int(config.get('hab', 'port_send')), queue)
+    producer.start_thread()
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', 1001))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('127.0.0.1', int(config.get('mcc', 'post_recv'))))
     time.sleep(0.1)
     print("Send packet_data")
     i = 0
@@ -46,14 +55,14 @@ if __name__ == "__main__":
 
         print("Send " + str(values))
         packed_data = packer.pack(*values)
-        s.sendall(packed_data)
+        sock.sendall(packed_data)
         if random.randint(1, 100) < 1:
             time.sleep(0.001)
         i += 1
     print("End of packet_data")
-    s.close()
+    sock.close()
 
     time.sleep(10)
-    c.stop_thread()
-    p.stop_thread()
+    consumer.stop_thread()
+    producer.stop_thread()
     time.sleep(2)

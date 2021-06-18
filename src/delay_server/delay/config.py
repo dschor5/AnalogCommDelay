@@ -1,15 +1,21 @@
-""" Configurable communication delay.  """
-
+""" Load Delay Server configuration."""
+import configparser
+import os
 import logging
-import threading
 
-class DelayConfig:
-    """
-    Delay Configuration
-    """
+# Disable pylint error for too many ancestors
+# pylint: disable=R0901
+class DelayConfig(configparser.ConfigParser):
+    """ DelayConfig class. Extends ConfigParser."""
 
     # Singleton instance
     __instance = None
+
+    # Configuration file
+    __filename = 'config.ini'
+
+    # Initialized flag
+    __initialized = False
 
     def __new__(cls):
         """ Singleton constructor for DelayConfig object. """
@@ -19,47 +25,55 @@ class DelayConfig:
 
     def __init__(self):
         """ Initialize variables for this class."""
-        if not hasattr(self, '_lock'):
-            # Lock for accessing/modifying delay.
-            self._lock = threading.Lock()
-            # Override delay. If None, then no override.
-            self._override = None
-            # File containing delay configuration
-            self._filename = None
-            # Create logger for this module
-            self._logger = logging.getLogger(self.__class__.__name__)
-            self._logger.info('Create logger "%s"', self.__class__.__name__)
+        if not DelayConfig.__initialized:
+            super().__init__(self)
+            DelayConfig.__initialized = True
+            self._read_config()
 
-    def load_file(self, p_filename):
-        """ Load configuration file. """
-        self._logger.info('Load file "%s"', p_filename)
-        self._filename = p_filename
+    def _read_config(self, filename=None):
+        """ Read config file."""
+        # Access to logger
+        logger = logging.getLogger(self.__class__.__name__)
 
-    def clear_override(self):
-        """ Clear delay override. """
-        with self._lock:
-            self._override = None
-            self._logger.info('Override=None')
+        # Accept filename override for testing purposes
+        if filename is None:
+            filename = DelayConfig.__filename
 
-    def set_override(self, p_override):
-        """ Set override delay. """
-        with self._lock:
-            self._override = p_override
-            self._logger.info('Override=%s', str(self._override))
+        if os.path.exists(filename):
+            super().__init__()
+            try:
+                self.read(filename)
+            except configparser.Error:
+                logger.critical('Failed to parse log file %s', filename)
+                return False
+            if not self._validate():
+                logger.critical('Failed to validate %s', filename)
+                return False
+        else:
+            logger.critical('Failed to load %s', self.__filename)
+            return False
+        return True
 
-    @property
-    def filename(self):
-        """ Filename accessor. """
-        return self._filename
+    def get(self, section, option, **kwargs):
+        """ Get attributes. """
+        ret = None
+        try:
+            ret = super().get(section, option, **kwargs)
+        except configparser.Error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error('Did not find config[%s][%s]', section, option)
+        return ret
 
-    @property
-    def time(self):
-        """ Time property containing the current delay. """
-        curr_delay = 0
-        with self._lock:
-            if self._override is not None:
-                curr_delay = self._override
-            else:
-                curr_delay = 0
-                # TODO read from file
-        return curr_delay
+    def _validate(self):
+        """ Validate config file. Check for required params. """
+        # TODO: Validate config file
+        # Check for required fields to run the program.
+        return self.__initialized is not None
+
+    def __repr__(self):
+        rtn = ""
+        for cat_name, cat_data in self.items():
+            for field_name in cat_data:
+                rtn += cat_name + "." + field_name + \
+                    " = " + str(self.get(cat_name, field_name)) + "\n"
+        return rtn

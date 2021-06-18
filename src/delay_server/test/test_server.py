@@ -5,6 +5,7 @@ import mock
 import struct
 import random
 import os
+import sys
 
 # pylint: disable=E0401
 from test.test_class import TestClass
@@ -169,8 +170,10 @@ class TestServer(TestClass):
         with mock.patch('struct.pack', mock_struct):
             self.assertEqual(self.__server._send(mock_send, msg), 7)
 
+    @unittest.skipIf(sys.platform.startswith("win"), "Will not work on Windows")
     def test_socketpair(self):
-
+        print("Running!")
+        # Create a socket pair 
         sock_send, sock_recv = socket.socketpair()
         
         for num_bytes in range(1, SocketServer.MAX_MSG_LEN-SocketServer.FOOTER_SIZE+1):
@@ -180,7 +183,6 @@ class TestServer(TestClass):
             self.assertEqual(self.__server._send(sock_send, raw_msg), msg_len)
             ret = self.__server._receive(sock_recv)
             self.assertEqual(raw_msg, ret)
-        
         sock_recv.close()
         sock_send.close()
 

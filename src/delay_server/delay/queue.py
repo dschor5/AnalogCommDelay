@@ -6,7 +6,7 @@ import logging
 
 # Disable pylint warning for import errors.
 # pylint: disable=E0401
-from delay.config import DelayConfig
+from delay.delay import CommDelay
 
 class DelayQueue:
     """ Delay Queue """
@@ -20,7 +20,7 @@ class DelayQueue:
         self._list = []
 
         # Delay configuration.
-        self._delay = DelayConfig()
+        self._delay = CommDelay()
 
         # Logger object.
         self._logger = logging.getLogger(self.__class__.__name__)

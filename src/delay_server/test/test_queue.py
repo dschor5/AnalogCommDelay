@@ -4,7 +4,7 @@ import time
 
 # pylint: disable=E0401
 from test.test_class import TestClass
-from delay.config import DelayConfig
+from delay.delay import CommDelay
 from delay.queue import DelayQueue
 
 
@@ -18,7 +18,7 @@ class TestQueue(TestClass):
     def setUp(self):
         """ Always create a new queue before running a test."""
         self.__queue = DelayQueue()
-        config = DelayConfig()
+        config = CommDelay()
         config.set_override(None)
 
     def test_init(self):
@@ -53,7 +53,7 @@ class TestQueue(TestClass):
 
         delay = 0.2 # sec
 
-        c = DelayConfig()
+        c = CommDelay()
         c.set_override(delay)
         self.assertEqual(c.time, delay)
 

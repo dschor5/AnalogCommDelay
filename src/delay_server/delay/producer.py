@@ -3,7 +3,7 @@ import select
 import logging
 
 from delay.server import SocketServer
-
+# pylint: disable=R0801
 class ProducerThread(SocketServer):
     """ Receive messages. Put them in the queue."""
 
@@ -15,10 +15,7 @@ class ProducerThread(SocketServer):
         """ Thread """
 
         logger = logging.getLogger(self.__class__.__name__)
-        req_kwargs = set(['sock', 'stop', 'queue', 'connections'])
-        found = req_kwargs.difference(kwargs)
-        if len(found) > 0:
-            logger.critical('run() missing [%s] kwargs', found)
+        if not self._validate_thread_param(**kwargs):
             return
 
         i = 0
@@ -26,7 +23,7 @@ class ProducerThread(SocketServer):
             sock_read, _, sock_exception = select.select(kwargs['connections'], [], \
                 kwargs['connections'], SocketServer._SOCKET_TIMEOUT)
             for i_sock in sock_read:
-                # Accept new connections
+                # Accept new connections to receive messages
                 if i_sock is kwargs['sock']:
                     i_client_socket, i_client_address = kwargs['sock'].accept()
                     kwargs['connections'].append(i_client_socket)
