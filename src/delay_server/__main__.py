@@ -16,9 +16,8 @@ from delay.config import DelayConfig
 from common.crc16 import CRC16
 
 
-
 def test_client():
-    """ Test client."""
+    """Test client."""
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_sock.connect(('127.0.0.1', 1001))
 
