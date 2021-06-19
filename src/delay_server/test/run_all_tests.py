@@ -1,9 +1,20 @@
 """Discover and run all tests."""
-from unittest import TestLoader
-from unittest import TextTestRunner
+try:
+    import coverage
+    import_coverage = True
+except ImportError:
+    import_coverage = False
+import unittest
 
 if __name__ == '__main__':
-    test_loader = TestLoader()
-    test_suite = test_loader.discover('./test/')
-    test_runner = TextTestRunner(verbosity=2)
+    if import_coverage:
+        cov = coverage.Coverage()
+        cov.start()
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('.')
+    test_runner = unittest.TextTestRunner(verbosity=2)
     test_runner.run(test_suite)
+    if import_coverage:
+        cov.stop()
+        cov.save()
+        cov.html_report()
