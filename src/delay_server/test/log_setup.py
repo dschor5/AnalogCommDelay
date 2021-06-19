@@ -28,7 +28,6 @@ class TestLog:
             if not os.path.exists(TestLog.__LOG_CONFIG):
                 raise RuntimeError('Cannot load unit test log config.')
 
-            print("\n\n\nCONFIGURING LOG\n\n\n")
             if not os.path.exists(TestLog.__LOG_FOLDER):
                 os.makedirs(TestLog.__LOG_FOLDER)
 

@@ -29,6 +29,8 @@ class CommDelay:
             self._override = None
             # File containing delay configuration
             self._filename = None
+            # Cache curr delay
+            self._time_cache = 0
             # Create logger for this module
             self._logger = logging.getLogger(self.__class__.__name__)
             self._logger.info('Create logger "%s"', self.__class__.__name__)
@@ -58,6 +60,7 @@ class CommDelay:
     @property
     def time(self):
         """Time property containing the current delay."""
+        # TODO: If it fails to get the lock, then return self._time_cache
         curr_delay = 0
         with self._lock:
             if self._override is not None:

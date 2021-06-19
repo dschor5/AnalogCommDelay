@@ -1,6 +1,7 @@
 """Implements a Lock with a timeout."""
 import threading
 import contextlib
+import time
 
 
 class LockTimeout:
@@ -12,17 +13,25 @@ class LockTimeout:
 
     def acquire(self, blocking=True, timeout=-1):
         """Acquire function. Matches threading.Lock.acquire interface."""
-        return self.__lock.aquire(blocking, timeout)
+        return self.__lock.acquire(blocking, timeout)
 
     def release(self):
         """Release lock. Matches threading.Lock.release interface."""
-        return self.__lock.release()
+        ret = True
+        try:
+            self.__lock.release()
+        except RuntimeError:
+            ret = False
+        return ret
 
     @contextlib.contextmanager
     def acquire_timeout(self, lock_timeout):
         """Aquire function with timeout."""
         ret = self.__lock.acquire(blocking=True, timeout=lock_timeout)
-        try:
-            yield ret
-        finally:
+        yield ret
+        if ret:
             self.__lock.release()
+
+    def locked(self):
+        """Return true if locked."""
+        return self.__lock.locked()
