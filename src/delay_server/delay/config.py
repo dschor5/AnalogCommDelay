@@ -1,12 +1,13 @@
-""" Load Delay Server configuration."""
+"""Load Delay Server configuration."""
 import configparser
 import os
 import logging
 
+
 # Disable pylint error for too many ancestors
 # pylint: disable=R0901
 class DelayConfig(configparser.ConfigParser):
-    """ DelayConfig class. Extends ConfigParser."""
+    """DelayConfig class. Extends ConfigParser."""
 
     # Singleton instance
     __instance = None
@@ -18,20 +19,20 @@ class DelayConfig(configparser.ConfigParser):
     __initialized = False
 
     def __new__(cls):
-        """ Singleton constructor for DelayConfig object. """
+        """Singleton constructor for DelayConfig object."""
         if not DelayConfig.__instance:
             DelayConfig.__instance = super(DelayConfig, cls).__new__(cls)
         return DelayConfig.__instance
 
     def __init__(self):
-        """ Initialize variables for this class."""
+        """Initialize variables for this class."""
         if not DelayConfig.__initialized:
             super().__init__(self)
             DelayConfig.__initialized = True
             self._read_config()
 
     def _read_config(self, filename=None):
-        """ Read config file."""
+        """Read config file."""
         # Access to logger
         logger = logging.getLogger(self.__class__.__name__)
 
@@ -55,7 +56,7 @@ class DelayConfig(configparser.ConfigParser):
         return True
 
     def get(self, section, option, **kwargs):
-        """ Get attributes. """
+        """Get attributes."""
         ret = None
         try:
             ret = super().get(section, option, **kwargs)
@@ -65,12 +66,13 @@ class DelayConfig(configparser.ConfigParser):
         return ret
 
     def _validate(self):
-        """ Validate config file. Check for required params. """
+        """Validate config file. Check for required params."""
         # TODO: Validate config file
         # Check for required fields to run the program.
         return self.__initialized is not None
 
     def __repr__(self):
+        """Return list of all config fields."""
         rtn = ""
         for cat_name, cat_data in self.items():
             for field_name in cat_data:

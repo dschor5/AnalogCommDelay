@@ -1,11 +1,11 @@
-""" Test for delay.config module. """
-import unittest
+"""Test for delay.config module."""
 import mock
 import configparser
 
 # pylint: disable=E0401
 from test.test_class import TestClass
 from delay.config import DelayConfig
+
 
 class TestDelayConfig(TestClass):
     """Test class for main file."""

@@ -1,9 +1,10 @@
-""" Test for delay.config module. """
+"""Test for delay.config module."""
 import unittest
 import logging
 
 # pylint: disable=E0401
 from test.log_setup import TestLog
+
 
 class TestClass(unittest.TestCase):
     """Test class for main file."""

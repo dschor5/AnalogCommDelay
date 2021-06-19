@@ -1,9 +1,8 @@
 """ Test for delay.config module. """
-import unittest
-
 # pylint: disable=E0401
 from test.test_class import TestClass
 from delay.delay import CommDelay
+
 
 class TestCommDelay(TestClass):
     """Test class for main file."""

@@ -19,7 +19,7 @@ from common.crc16 import CRC16
 def test_client():
     """Test client."""
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_sock.connect(('127.0.0.1', 1001))
+    client_sock.connect(('', 1001))
 
 
 if __name__ == "__main__":

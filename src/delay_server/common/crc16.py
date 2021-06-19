@@ -1,13 +1,15 @@
-""" Implementation of CRC-16 CCITT-FALSE Algorithm."""
+"""Implementation of CRC-16 CCITT-FALSE Algorithm."""
+
 
 class CRC16:
-    """ CRC16 Class. """
+    """CRC16 Class."""
+
     __CRC_CCITT_POLY = 0x1021
     __CRC_CCITT_INIT = 0xFFFF
 
     @staticmethod
     def calc_crc(data, crc=None):
-        """ Calculate CRC16 on the given data. """
+        """Calculate CRC16 on the given data."""
         if data is None:
             return None
         if not isinstance(data, bytes) and not isinstance(data, bytearray):

@@ -50,7 +50,7 @@ class SocketServer(abc.ABC, threading.Thread):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.settimeout(timeout)
-        sock.bind(('127.0.0.1', port))
+        sock.bind(('', port))
         sock.listen()
 
         return sock
@@ -225,4 +225,5 @@ class SocketServer(abc.ABC, threading.Thread):
 
     @abc.abstractmethod
     def run(self, **kwargs):
+        """Abstract run method for thread."""
         pass

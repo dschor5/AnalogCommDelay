@@ -3,7 +3,6 @@ import unittest
 import socket
 import mock
 import struct
-import random
 import os
 import sys
 
@@ -12,7 +11,7 @@ from test.test_class import TestClass
 from delay.server import SocketServer
 from delay.producer import ProducerThread
 from delay.queue import DelayQueue
-from common.crc16 import CRC16
+
 
 class TestServer(TestClass):
     """Test class for main file."""
@@ -22,7 +21,7 @@ class TestServer(TestClass):
         self.__port = 1000
         self.__queue = DelayQueue()
         self.__server = None
-        
+
     def setUp(self):
         self.__server = ProducerThread(self.__port, self.__queue)
 
@@ -61,16 +60,16 @@ class TestServer(TestClass):
         else:
             self.assertTrue(self.__server.start_thread())
 
-        # Start thread already running. 
+        # Start thread already running.
         self.assertFalse(self.__server.start_thread())
 
         # Stop thread nominal.
         self.assertTrue(self.__server.stop_thread())
 
-        # Stp server already off. 
+        # Stp server already off.
         self.assertFalse(self.__server.stop_thread())
 
-        # Stop a thread fails join. 
+        # Stop a thread fails join.
         self.__server = ProducerThread(self.__port, self.__queue)
         if os.environ.get('TRAVISCI') is not None:
             with mock.patch('delay.server.socket.socket.bind'):
@@ -84,7 +83,7 @@ class TestServer(TestClass):
             self.assertFalse(self.__server.stop_thread())
 
     def test_run(self):
-        # Needed for code coverage only. 
+        # Needed for code coverage only.
         SocketServer.run(dict())
 
     def test_receive(self):
@@ -92,18 +91,18 @@ class TestServer(TestClass):
         mock_recv = mock.Mock()
         mock_struct = mock.Mock()
 
-        # Invalid sock object. 
+        # Invalid sock object.
         self.assertIsNone(self.__server._receive(None))
 
         # No message header received
         mock_recv.recv.return_value = 0
         self.assertIsNone(self.__server._receive(mock_recv))
 
-        # Message header with invalid length. 
+        # Message header with invalid length.
         mock_recv.recv.side_effect = [b'\xFF\xFF']
         self.assertIsNone(self.__server._receive(mock_recv))
 
-        # Message header with valid length, but invalid length. 
+        # Message header with valid length, but invalid length.
         mock_recv.recv.side_effect = [b'\x00\x00\x00\x01', 0]
         self.assertIsNone(self.__server._receive(mock_recv))
 
@@ -117,7 +116,7 @@ class TestServer(TestClass):
         mock_recv.recv.side_effect = [b'\xFF\xFF\xFF\xFF', 0]
         self.assertIsNone(self.__server._receive(mock_recv))
 
-        # Message data with invalid length. 
+        # Message data with invalid length.
         mock_recv.recv.side_effect = [b'\x00\x00\x00\x03', b'\x01']
         self.assertIsNone(self.__server._receive(mock_recv))
 
@@ -179,19 +178,21 @@ class TestServer(TestClass):
         with mock.patch('struct.pack', mock_struct):
             self.assertEqual(self.__server._send(mock_send, msg), 7)
 
-    @unittest.skipIf(sys.platform.startswith("win"), "Will not work on Windows")
+    @unittest.skipIf(sys.platform.startswith("win"),
+                     "Will not work on Windows")
     def test_socketpair(self):
         print("Running!")
-        # Create a socket pair 
+        # Create a socket pair
         sock_send, sock_recv = socket.socketpair()
-        
-        for num_bytes in range(1, SocketServer.MAX_MSG_LEN-SocketServer.FOOTER_SIZE+1):
+
+        for num_bytes in range(1, SocketServer.MAX_MSG_LEN -
+                               SocketServer.FOOTER_SIZE + 1):
             num_bytes = 1
             raw_msg = bytearray(os.urandom(num_bytes))
-            msg_len = len(raw_msg) + SocketServer.HEADER_SIZE + SocketServer.FOOTER_SIZE
+            msg_len = len(raw_msg) + SocketServer.HEADER_SIZE + \
+                SocketServer.FOOTER_SIZE
             self.assertEqual(self.__server._send(sock_send, raw_msg), msg_len)
             ret = self.__server._receive(sock_recv)
             self.assertEqual(raw_msg, ret)
         sock_recv.close()
         sock_send.close()
-

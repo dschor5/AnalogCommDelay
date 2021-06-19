@@ -1,14 +1,10 @@
 """ Test for delay.queue module. """
-import unittest
-import time
-import mock
-
-
-# Disable pylint warning for import errors. 
+# Disable pylint warning for import errors.
 # pylint: disable=E0401
 from test.test_class import TestClass
 from delay.consumer import ConsumerThread
 from delay.queue import DelayQueue
+
 
 class TestConsumer(TestClass):
     """Test class for main file."""
@@ -18,7 +14,7 @@ class TestConsumer(TestClass):
         self.__port = 1000
         self.__queue = DelayQueue()
         self.__server = None
-        
+
     def setUp(self):
         self.__server = ConsumerThread(self.__port, self.__queue)
 
@@ -28,6 +24,6 @@ class TestConsumer(TestClass):
             self.__server = None
 
     def test_run(self):
-        # Needed for code coverage only. 
+        # Needed for code coverage only.
         self.__server.run(**dict())
         self.__server.stop_thread()

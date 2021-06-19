@@ -1,9 +1,8 @@
-""" Test for common.crc16 module. """
-import unittest
-
- # pylint: disable=E0401
+"""Test for common.crc16 module."""
+# pylint: disable=E0401
 from test.test_class import TestClass
 from common.crc16 import CRC16
+
 
 class TestCrc16(TestClass):
     """Test class for main file."""
@@ -12,7 +11,7 @@ class TestCrc16(TestClass):
         super().__init__(*args, **kwargs)
 
     def test_calc_crc(self):
-        # Based on https://crccalc.com 
+        # Based on https://crccalc.com
 
         # Input validation
         self.assertEqual(CRC16.calc_crc(None), None)

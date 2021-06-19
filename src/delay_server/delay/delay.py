@@ -1,12 +1,11 @@
-""" Configurable communication delay.  """
+"""Configurable communication delay."""
 
 import logging
 import threading
 
+
 class CommDelay:
-    """
-    Delay Configuration
-    """
+    """Delay Configuration."""
 
     # Singleton instance
     __instance = None
@@ -15,13 +14,13 @@ class CommDelay:
     __initialized = False
 
     def __new__(cls):
-        """ Singleton constructor for Delay object. """
+        """Singleton constructor for Delay object."""
         if not CommDelay.__instance:
             CommDelay.__instance = super(CommDelay, cls).__new__(cls)
         return CommDelay.__instance
 
     def __init__(self):
-        """ Initialize variables for this class."""
+        """Initialize variables for this class."""
         if not CommDelay.__initialized:
             CommDelay.__initialized = True
             # Lock for accessing/modifying delay.
@@ -35,30 +34,30 @@ class CommDelay:
             self._logger.info('Create logger "%s"', self.__class__.__name__)
 
     def load_file(self, p_filename):
-        """ Load configuration file. """
+        """Load configuration file."""
         self._logger.info('Load file "%s"', p_filename)
         self._filename = p_filename
 
     def clear_override(self):
-        """ Clear delay override. """
+        """Clear delay override."""
         with self._lock:
             self._override = None
             self._logger.info('Override=None')
 
     def set_override(self, p_override):
-        """ Set override delay. """
+        """Set override delay."""
         with self._lock:
             self._override = p_override
             self._logger.info('Override=%s', str(self._override))
 
     @property
     def filename(self):
-        """ Filename accessor. """
+        """Filename accessor."""
         return self._filename
 
     @property
     def time(self):
-        """ Time property containing the current delay. """
+        """Time property containing the current delay."""
         curr_delay = 0
         with self._lock:
             if self._override is not None:

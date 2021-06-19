@@ -1,30 +1,31 @@
-""" Producer thread. Receives messages and puts them in a queue. """
+"""Producer thread. Receives messages and puts them in a queue."""
 import logging
 import select
 
 from delay.server import SocketServer
 
+
 class ConsumerThread(SocketServer):
-    """ Consumer Thread """
+    """Consumer Thread."""
 
     def __init__(self, p_port, p_queue):
-        """ Initializer """
+        """Initialize thread."""
         SocketServer.__init__(self, "Consumer", p_port, p_queue)
 
-
     def run(self, **kwargs):
-        """ Thread """
-
+        """Thread."""
         logger = logging.getLogger(self.__class__.__name__)
 
-        logger = logging.getLogger(self.__class__.__name__)
         if not self._validate_thread_param(**kwargs):
             return
 
         i = 0
         while not kwargs['stop'].isSet():
-            sock_read, sock_write, sock_exception = select.select(kwargs['connections'], \
-                kwargs['connections'], kwargs['connections'], SocketServer._SOCKET_TIMEOUT)
+            sock_read, sock_write, sock_exception = \
+                select.select(kwargs['connections'],
+                              kwargs['connections'],
+                              kwargs['connections'],
+                              SocketServer._SOCKET_TIMEOUT)
             for i_sock in sock_read:
                 # Accept new connections to send messages
                 if i_sock is kwargs['sock']:

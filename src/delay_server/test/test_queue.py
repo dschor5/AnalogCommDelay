@@ -1,5 +1,4 @@
 """ Test for delay.queue module. """
-import unittest
 import time
 
 # pylint: disable=E0401
@@ -38,7 +37,7 @@ class TestQueue(TestClass):
         ret = self.__queue.pop()
         self.assertIsNone(ret)
         print("2222")
-        for i in range(1,5):
+        for i in range(1, 5):
             print("***" * (i+1))
             print("pre-push " + str(i))
             ret = self.__queue.push("test" + str(i))
@@ -48,7 +47,7 @@ class TestQueue(TestClass):
             print("pre-pop " + str(i))
             ret = self.__queue.pop()
             print("pre-len " + str(i) + " ret=" + str(ret))
-            #self.assertEqual(ret, "test" + str(i))
+            # self.assertEqual(ret, "test" + str(i))
             print(self.__queue)
             self.assertEqual(len(self.__queue), 0)
             print("***" * (i+1))
@@ -60,7 +59,7 @@ class TestQueue(TestClass):
     def test_push_pop_with_delay(self):
         self.assertEqual(len(self.__queue), 0)
 
-        delay = 0.2 # sec
+        delay = 0.2  # sec
 
         c = CommDelay()
         c.set_override(delay)
@@ -73,7 +72,7 @@ class TestQueue(TestClass):
         time.sleep(delay)
         ret = self.__queue.pop()
         self.assertEqual(ret, "test")
-    
+
     def test_str(self):
         self.assertEqual(len(self.__queue), 0)
         ret = self.__queue.__str__()
@@ -88,5 +87,3 @@ class TestQueue(TestClass):
             exp += "]"
             ret = self.__queue.__str__()
             self.assertEqual(ret, exp)
-            
-        
