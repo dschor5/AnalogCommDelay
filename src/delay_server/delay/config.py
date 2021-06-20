@@ -31,8 +31,8 @@ class DelayConfig(configparser.ConfigParser):
             DelayConfig.__initialized = True
             self._read_config()
 
-    def _read_config(self, filename=None):
-        """Read config file."""
+    def _read_config(self, filename: str = None) -> bool:
+        """Read config file. Returns true on success."""
         # Access to logger
         logger = logging.getLogger(self.__class__.__name__)
 
