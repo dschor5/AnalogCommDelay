@@ -42,7 +42,7 @@ class TestCommDelay(TestClass):
 
     def test_override(self):
         config = CommDelay()
-        config.set_override(5)
+        self.assertTrue(config.set_override(5.0))
         self.assertEqual(config.time, 5)
         config.clear_override()
         self.assertEqual(config.time, 0)

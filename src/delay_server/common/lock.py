@@ -11,11 +11,11 @@ class LockTimeout:
         """Initialize."""
         self.__lock = threading.Lock()
 
-    def acquire(self, blocking=True, timeout=-1):
+    def acquire(self, blocking: bool = True, timeout: int = -1) -> bool:
         """Acquire function. Matches threading.Lock.acquire interface."""
         return self.__lock.acquire(blocking, timeout)
 
-    def release(self):
+    def release(self) -> bool:
         """Release lock. Matches threading.Lock.release interface."""
         ret = True
         try:
@@ -25,13 +25,13 @@ class LockTimeout:
         return ret
 
     @contextlib.contextmanager
-    def acquire_timeout(self, lock_timeout):
-        """Aquire function with timeout."""
+    def acquire_timeout(self, lock_timeout: int) -> bool:
+        """Context manager to acquire with timeout."""
         ret = self.__lock.acquire(blocking=True, timeout=lock_timeout)
         yield ret
         if ret:
             self.__lock.release()
 
-    def locked(self):
-        """Return true if locked."""
+    def locked(self) -> bool:
+        """Return True if locked."""
         return self.__lock.locked()

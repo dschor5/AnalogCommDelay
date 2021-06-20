@@ -5,4 +5,4 @@ draft
 *.log.*
 htmlcov
 .coverage
-
+.spyproject

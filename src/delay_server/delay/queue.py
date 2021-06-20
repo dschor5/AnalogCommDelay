@@ -28,14 +28,17 @@ class DelayQueue:
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def clear(self):
+    def clear(self) -> bool:
         """Clear queue."""
+        ret = False
         with self._lock.acquire_timeout(self.__TIMEOUT) as lock:
             if lock:
                 self._logger.info('Clear %d from queue.', len(self._list))
                 self._list.clear()
+                ret = True
             else:
                 self._logger.error('Lock failed. Cannot clear queue.')
+        return ret
 
     def pop(self):
         """Pop message from queue after the delay expired."""
@@ -50,12 +53,15 @@ class DelayQueue:
                 self._logger.error('Lock failed. Cannot pop queue.')
         return ret
 
-    def push(self, value):
+    def push(self, value: object):
         """Push message into the queue. Adds a timestamp."""
         length = None
         with self._lock.acquire_timeout(self.__TIMEOUT) as lock:
             if lock:
-                self._list.append((time.monotonic(), value))
+                if value is not None:
+                    self._list.append((time.monotonic(), value))
+                else:
+                    self._logger.error('Cannot push None object.')
                 length = len(self._list)
             else:
                 self._logger.error('Lock failed. Cannot push queue.')
