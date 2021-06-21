@@ -6,3 +6,4 @@ draft
 htmlcov
 .coverage
 .spyproject
+docs/_build
