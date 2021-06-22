@@ -6,6 +6,7 @@ import configparser
 from test.test_custom_class import TestClass
 from delay_server.delay.config import DelayConfig
 
+
 class TestDelayConfig(TestClass):
     """Test class for main file."""
 
@@ -31,7 +32,8 @@ class TestDelayConfig(TestClass):
 
         mock_obj = mock.Mock()
         mock_obj.return_value = False
-        with mock.patch('delay_server.delay.config.DelayConfig._validate', mock_obj):
+        with mock.patch('delay_server.delay.config.DelayConfig._validate',
+                        mock_obj):
             self.assertFalse(self._config._read_config())
 
         mock_obj = mock.Mock()

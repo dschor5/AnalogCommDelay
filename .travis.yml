@@ -11,7 +11,7 @@ env:
     - TRAVISCI=true
 script:
 #  - python3 -m unittest -v
-  - cd src/delay_server
+  - cd delay_server
   - coverage run -m unittest discover -v
   - pylint --exit-zero delay_server
   - cd ../delay_client

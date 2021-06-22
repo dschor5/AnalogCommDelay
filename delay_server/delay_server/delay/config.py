@@ -38,10 +38,9 @@ class DelayConfig(configparser.ConfigParser):
 
         # Accept filename override for testing purposes
         if filename is None:
-            filename = DelayConfig.__filename
+            filename = os.path.abspath('.') + "/" + DelayConfig.__filename
 
         if os.path.exists(filename):
-            super().__init__()
             try:
                 self.read(filename)
             except configparser.Error:
@@ -51,7 +50,7 @@ class DelayConfig(configparser.ConfigParser):
                 logger.critical('Failed to validate %s', filename)
                 return False
         else:
-            logger.critical('Failed to load %s', self.__filename)
+            logger.critical('Failed to load %s', filename)
             return False
         return True
 
