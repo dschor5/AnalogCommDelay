@@ -1,7 +1,7 @@
 """Test for common.crc16 module."""
 # pylint: disable=E0401
 from test.test_custom_class import TestClass
-from delay_server.util.crc16 import CRC16
+from delay_client.util.crc16 import CRC16
 
 
 class TestCrc16(TestClass):

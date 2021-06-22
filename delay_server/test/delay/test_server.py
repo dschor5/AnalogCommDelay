@@ -45,7 +45,7 @@ class TestServer(TestClass):
     def test_create_socket(self):
         self.assertIsNone(SocketServer.create_socket(None))
         if os.environ.get('TRAVISCI') is not None:
-            with mock.patch('delay.server.socket.socket.bind'):
+            with mock.patch('delay_server.delay.server.socket.socket.bind'):
                 ret = SocketServer.create_socket(1000)
         else:
             ret = SocketServer.create_socket(1000)
@@ -79,7 +79,8 @@ class TestServer(TestClass):
 
         mock_obj = mock.Mock()
         mock_obj.return_value = True
-        with mock.patch('delay_server.delay.server.threading.Thread.is_alive', mock_obj):
+        with mock.patch('delay_server.delay.server.threading.Thread.is_alive',
+                        mock_obj):
             self.assertFalse(self.__server.stop_thread())
 
     def test_run(self):
