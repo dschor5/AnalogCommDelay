@@ -17,7 +17,7 @@ script:
   - cd ../delay_client
   - coverage run -m unittest discover -v
   - pylint --exit-zero delay_client
-  - cd ../../
+  - cd ../
   - coverage combine delay_server/.coverage delay_client/.coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
