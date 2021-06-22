@@ -1,0 +1,18 @@
+version: 2
+
+python:
+  version: 3.8
+
+# Build documentation in the docs/ directory with Phinx
+sphinx:
+  builder: html
+  configuration: docs/conf.py
+  fail_on_warning: true
+  
+  
+# Optionally build your docs in additional formats such as PDF
+formats:
+  - pdf
+  
+build:
+  image: latest
