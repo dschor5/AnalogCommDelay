@@ -14,8 +14,10 @@ class TestCrc16(TestClass):
         # Based on https://crccalc.com
 
         # Input validation
-        self.assertEqual(CRC16.calc_crc(None), None)
-        self.assertEqual(CRC16.calc_crc(1), None)
+        with self.assertRaises(AttributeError):
+            CRC16.calc_crc(None)
+        with self.assertRaises(TypeError):
+            CRC16.calc_crc("string_input")
 
         # Calc CRC without initial seed.
         crc = CRC16.calc_crc(b'\x01')

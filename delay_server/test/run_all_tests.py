@@ -17,4 +17,4 @@ if __name__ == '__main__':
     if import_coverage:
         cov.stop()
         cov.save()
-        # cov.html_report()
+        cov.html_report()

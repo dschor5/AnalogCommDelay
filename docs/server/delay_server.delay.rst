@@ -12,14 +12,6 @@ delay\_server.delay.config module
    :undoc-members:
    :show-inheritance:
 
-delay\_server.delay.consumer module
------------------------------------
-
-.. automodule:: delay_server.delay.consumer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 delay\_server.delay.delay module
 --------------------------------
 
@@ -28,26 +20,18 @@ delay\_server.delay.delay module
    :undoc-members:
    :show-inheritance:
 
-delay\_server.delay.producer module
------------------------------------
-
-.. automodule:: delay_server.delay.producer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-delay\_server.delay.queue module
+delay\_server.delay.proxy module
 --------------------------------
 
-.. automodule:: delay_server.delay.queue
+.. automodule:: delay_server.delay.proxy
    :members:
    :undoc-members:
    :show-inheritance:
 
-delay\_server.delay.server module
+delay\_server.delay.socket module
 ---------------------------------
 
-.. automodule:: delay_server.delay.server
+.. automodule:: delay_server.delay.socket
    :members:
    :undoc-members:
    :show-inheritance:

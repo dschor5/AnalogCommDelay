@@ -4,6 +4,8 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Ref polyastro for examples
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -44,7 +46,9 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
-    'sphinx.ext.graphviz'
+    'sphinx.ext.graphviz',
+    'sphinx.ext.intersphinx',
+    'notfound.extension'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,6 +59,10 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# Intersphinx configuration
+intersphinx_mapping = {
+   'python': ('https://docs.python.org/3', None),
+}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -73,6 +81,8 @@ html_static_path = ['_static']
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
+napoleon_include_init_with_doc = True
+
 
 # -- Options for todo extension ----------------------------------------------
 

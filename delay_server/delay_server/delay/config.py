@@ -10,67 +10,144 @@ class DelayConfig(configparser.ConfigParser):
     """DelayConfig class. Extends ConfigParser."""
 
     # Singleton instance
-    __instance = None
+    _instance = None
 
     # Configuration file
-    __filename = 'config.ini'
+    _filename = 'config.ini'
 
     # Initialized flag
-    __initialized = False
+    _initialized = False
 
     def __new__(cls):
         """Singleton constructor for DelayConfig object."""
-        if not DelayConfig.__instance:
-            DelayConfig.__instance = super(DelayConfig, cls).__new__(cls)
-        return DelayConfig.__instance
+        if not DelayConfig._instance:
+            DelayConfig._instance = super(DelayConfig, cls).__new__(cls)
+        return DelayConfig._instance
 
-    def __init__(self):
-        """Initialize variables for this class."""
-        if not DelayConfig.__initialized:
+    def __init__(self, logger: logging.Logger = None):
+        """Initialize by reading default config file."""
+        if not DelayConfig._initialized:
             super().__init__(self)
-            DelayConfig.__initialized = True
+            DelayConfig._initialized = True
             self._read_config()
+            self._logger = logger
+            if self._logger is None:
+                self._logger = logging.getLogger(self.__class__.__name__)
 
     def _read_config(self, filename: str = None) -> bool:
-        """Read config file. Returns true on success."""
-        # Access to logger
-        logger = logging.getLogger(self.__class__.__name__)
+        """Read config file. Returns true on success.
 
+        Args:
+            filename (str): Name of config file.
+
+        Returns:
+            bool: True on success.
+        """
         # Accept filename override for testing purposes
         if filename is None:
-            filename = os.path.abspath('.') + "/" + DelayConfig.__filename
+            filename = os.path.abspath('.') + "/" + DelayConfig._filename
 
+        # Validate path and ensure it is able to read the file.
         if os.path.exists(filename):
             try:
                 self.read(filename)
             except configparser.Error:
-                logger.critical('Failed to parse log file %s', filename)
+                self._logger.critical('Failed to parse log file %s', filename)
                 return False
             if not self._validate():
-                logger.critical('Failed to validate %s', filename)
+                self._logger.critical('Failed to validate %s', filename)
                 return False
         else:
-            logger.critical('Failed to load %s', filename)
+            self._logger.critical('Failed to load %s', filename)
             return False
         return True
 
-    def get(self, section, option, **kwargs):
-        """Get attributes."""
+    def get(self, section: str, option: str, **kwargs) -> str:
+        """Get attribute from config file.
+
+        If the value is not found, return :class:`None` and log an error.
+
+        Args:
+            section (str): Config file section name.
+            option (str): Config file option name.
+
+        Returns:
+            str: Config value or :class:`None` if not found.
+        """
         ret = None
         try:
             ret = super().get(section, option, **kwargs)
         except configparser.Error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.error('Did not find config[%s][%s]', section, option)
+            self._logger.error('Did not find config[%s][%s]', section, option)
         return ret
 
-    def _validate(self):
-        """Validate config file. Check for required params."""
-        # TODO: Validate config file
-        # Check for required fields to run the program.
-        return self.__initialized is not None
+    def getint(self, section, option, **kwargs) -> int:
+        """Wrapper for :meth:`get()` that returns integers.
 
-    def __repr__(self):
+        Args:
+            section (str): Config file section name.
+            option (str): Config file option name.
+
+        Returns:
+            str: Config value. :class:`None` if not found or not an int.
+        """
+        ret = None
+        try:
+            ret = super().getint(section, option, **kwargs)
+        except ValueError:
+            self._logger.error('config[%s][%s] = "%s" - Expected int.',
+                               section, option,
+                               super().get(section, option, **kwargs))
+        return ret
+
+    def getfloat(self, section, option, **kwargs) -> float:
+        """Wrapper for :meth:`get()` that returns float.
+
+        Args:
+            section (str): Config file section name.
+            option (str): Config file option name.
+
+        Returns:
+            str: Config value. :class:`None` if not found or not a float.
+        """
+        ret = None
+        try:
+            ret = super().getfloat(section, option, **kwargs)
+        except ValueError:
+            self._logger.error('config[%s][%s] = "%s" - Expected float.',
+                               section, option,
+                               super().get(section, option, **kwargs))
+        return ret
+
+    def getboolean(self, section, option, **kwargs) -> bool:
+        """Wrapper for :meth:`get()` that returns boolean.
+
+        Args:
+            section (str): Config file section name.
+            option (str): Config file option name.
+
+        Returns:
+            str: Config value. :class:`None` if not found or not a boolean.
+        """
+        ret = None
+        try:
+            ret = super().getboolean(section, option, **kwargs)
+        except ValueError:
+            self._logger.error('config[%s][%s] = "%s" - Expected boolean.',
+                               section, option,
+                               super().get(section, option, **kwargs))
+        return ret
+
+    def _validate(self) -> bool:
+        """Validate config file. Check for required params.
+
+        Returns:
+            bool: True if config file is valid.
+        """
+        # TODO: Validate config file?
+        return self._initialized is not None
+
+    def __repr__(self) -> str:
         """Return list of all config fields."""
         rtn = ""
         for cat_name, cat_data in self.items():

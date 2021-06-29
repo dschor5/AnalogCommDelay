@@ -3,13 +3,16 @@ import threading
 import contextlib
 import time
 
+from delay_server.util.exceptions import LockError
+
 
 class LockTimeout:
     """Lock with Timeout."""
 
-    def __init__(self):
+    def __init__(self, name=""):
         """Initialize."""
         self.__lock = threading.Lock()
+        self.__name = name
 
     def acquire(self, blocking: bool = True, timeout: int = -1) -> bool:
         """Acquire function. Matches threading.Lock.acquire interface."""

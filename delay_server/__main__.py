@@ -9,11 +9,10 @@ import logging
 
 # pylint: disable=E0401
 from delay_server.delay.delay import CommDelay
-from delay_server.delay.queue import DelayQueue
-from delay_server.delay.producer import ProducerThread
-from delay_server.delay.consumer import ConsumerThread
+from delay_server.util.queue import DelayQueue
 from delay_server.delay.config import DelayConfig
 from delay_server.util.crc16 import CRC16
+from delay_server.delay.proxy import DelayProxy
 
 
 def test_client():
@@ -27,22 +26,29 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s', \
         filemode='w', level=logging.DEBUG, filename='DelayServer2.log')
     logging.info('Created logger')
-    delay = CommDelay().set_override(5)
+    delay = CommDelay().set_override(1)
     config = DelayConfig()
 
-    queue = DelayQueue()
-    consumer = ConsumerThread(int(config.get('mcc', 'post_recv')), queue)
-    consumer.start_thread()
-    producer = ProducerThread(int(config.get('hab', 'port_send')), queue)
-    producer.start_thread()
+    # queue = DelayQueue()
+    # consumer = ConsumerThread(1000, queue)
+    # consumer.start_thread()
+    # producer = ProducerThread(1001, queue)
+    # producer.start_thread()
+    
+    p_port = config.getint('mcc', 'port_recv')
+    c_port = config.getint('mcc', 'port_send')
+    
+    proxy = DelayProxy('mcc')
+    proxy.start_proxy(p_port, c_port)
+    time.sleep(1)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('127.0.0.1', int(config.get('mcc', 'post_recv'))))
+    sock.connect(('127.0.0.1', p_port))
     time.sleep(0.1)
     print("Send packet_data")
     i = 0
-    while i < 1:
-        num_bytes = random.randint(3, 10)
+    while i < 10000:
+        num_bytes = random.randint(3, 1020)
         packed_data = struct.pack('! I', num_bytes)
         crc = CRC16.calc_crc(packed_data)
         data = os.urandom(num_bytes - 2)
@@ -52,16 +58,15 @@ if __name__ == "__main__":
         values = (num_bytes, data, crc)
         packer = struct.Struct('! I ' + str(num_bytes-2) + 's H')
 
-        print("Send " + str(values))
+        #print("Send " + str(values))
         packed_data = packer.pack(*values)
         sock.sendall(packed_data)
-        if random.randint(1, 100) < 1:
-            time.sleep(0.001)
+        if random.randint(1, 10000) < 2:
+            time.sleep(0.00001)
         i += 1
     print("End of packet_data")
     sock.close()
 
     time.sleep(10)
-    consumer.stop_thread()
-    producer.stop_thread()
+    proxy.stop_proxy()
     time.sleep(2)
